@@ -7,7 +7,7 @@
 # What is it?
 
 This library provides support for the MAX7219 8x8 LED matrix on ESP8266 with MicroPython.
-It uses `[framebuf](https://docs.micropython.org/en/latest/esp8266/library/framebuf.html)` internally to provide drawing primitives and text support.
+It uses [`framebuf`](https://docs.micropython.org/en/latest/esp8266/library/framebuf.html) internally to provide drawing primitives and text support.
 You can chain several matrices the way you like: if you use two 4x 8x8 matrices, you can have 
 one of the left, and the other on the right giving you a 64x8 area, or have one on top of the other to have a 32x16 display!
 
@@ -80,7 +80,8 @@ screen.text('EFGH', 0, 8, 1)
 screen.show()
 ```
 
-# Credits
+# Credits
+
 This library is based on:
 - [Official Micropython SSD1306 driver](https://github.com/micropython/micropython/blob/master/drivers/display/ssd1306.py)
 - [micropython-max7219](https://github.com/mcauser/micropython-max7219) by [mcauser](https://github.com/mcauser)
