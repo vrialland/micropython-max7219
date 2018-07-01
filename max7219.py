@@ -2,25 +2,25 @@ from machine import Pin
 from micropython import const
 import framebuf
 
-DIGIT_0 = const(0x1)
+_DIGIT_0 = const(0x1)
 
-DECODE_MODE = const(0x9)
-NO_DECODE = const(0x0)
+_DECODE_MODE = const(0x9)
+_NO_DECODE = const(0x0)
 
-INTENSITY = const(0xa)
-INTENSITY_MIN = const(0x0)
+_INTENSITY = const(0xa)
+_INTENSITY_MIN = const(0x0)
 
-SCAN_LIMIT = const(0xb)
-DISPLAY_ALL_DIGITS = const(0x7)
+_SCAN_LIMIT = const(0xb)
+_DISPLAY_ALL_DIGITS = const(0x7)
 
-SHUTDOWN = const(0xc)
-SHUTDOWN_MODE = const(0x0)
-NORMAL_OPERATION = const(0x1)
+_SHUTDOWN = const(0xc)
+_SHUTDOWN_MODE = const(0x0)
+_NORMAL_OPERATION = const(0x1)
 
-DISPLAY_TEST = const(0xf)
-DISPLAY_TEST_NORMAL_OPERATION = const(0x0)
+_DISPLAY_TEST = const(0xf)
+_DISPLAY_TEST_NORMAL_OPERATION = const(0x0)
 
-MATRIX_SIZE = const(8)
+_MATRIX_SIZE = const(8)
 
 
 class Max7219(framebuf.FrameBuffer):
@@ -31,14 +31,17 @@ class Max7219(framebuf.FrameBuffer):
     so we have a 32x16 display area:
 
     >>> from machine import Pin, SPI
-    >>> import max7219
+    >>> from max7219 import Max7219
     >>> spi = SPI(1, baudrate=10000000)
     >>> screen = Max7219(32, 16, spi, Pin(15))
     >>> screen.rect(0, 0, 32, 16, 1)  # Draws a frame
     >>> screen.text('Hi!', 4, 4, 1)
     >>> screen.show()
+
+    On some matrices, the display is inverted (rotated 180°), in this case
+     you can use `rotate_180=True` in the class constructor.
     """
-    def __init__(self, width, height, spi, cs):
+    def __init__(self, width, height, spi, cs, rotate_180=False):
         # Pins setup
         self.spi = spi
         self.cs = cs
@@ -48,13 +51,15 @@ class Max7219(framebuf.FrameBuffer):
         self.width = width
         self.height = height
         # Guess matrices disposition
-        self.cols = width // MATRIX_SIZE
-        self.rows = height // MATRIX_SIZE
+        self.cols = width // _MATRIX_SIZE
+        self.rows = height // _MATRIX_SIZE
         self.nb_matrices = self.cols * self.rows
+        self.rotate_180 = rotate_180
 
         # 1 bit per pixel (on / off) -> 8 bytes per matrix
         self.buffer = bytearray(width * height // 8)
-        super().__init__(self.buffer, width, height, framebuf.MONO_HLSB)
+        format = framebuf.MONO_HLSB if not self.rotate_180 else framebuf.MONO_HMSB
+        super().__init__(self.buffer, width, height, format)
 
         # Init display
         self.init_display()
@@ -70,12 +75,12 @@ class Max7219(framebuf.FrameBuffer):
     def init_display(self):
         """Init hardware"""
         for command, data in (
-                (SHUTDOWN, SHUTDOWN_MODE),  # Prevent flash during init
-                (DECODE_MODE, NO_DECODE),
-                (DISPLAY_TEST, DISPLAY_TEST_NORMAL_OPERATION),
-                (INTENSITY, INTENSITY_MIN),
-                (SCAN_LIMIT, DISPLAY_ALL_DIGITS),
-                (SHUTDOWN, NORMAL_OPERATION),  # Let's go
+                (_SHUTDOWN, _SHUTDOWN_MODE),  # Prevent flash during init
+                (_DECODE_MODE, _NO_DECODE),
+                (_DISPLAY_TEST, _DISPLAY_TEST_NORMAL_OPERATION),
+                (_INTENSITY, _INTENSITY_MIN),
+                (_SCAN_LIMIT, _DISPLAY_ALL_DIGITS),
+                (_SHUTDOWN, _NORMAL_OPERATION),  # Let's go
         ):
             self._write_command(command, data)
 
@@ -86,7 +91,7 @@ class Max7219(framebuf.FrameBuffer):
         """Set display brightness (0 to 15)"""
         if not 0 <= value < 16:
             raise ValueError('Brightness must be between 0 and 15')
-        self._write_command(INTENSITY, value)
+        self._write_command(_INTENSITY, value)
 
     def show(self):
         """Update display"""
@@ -98,8 +103,13 @@ class Max7219(framebuf.FrameBuffer):
                 # Guess where the matrix is placed
                 row, col = divmod(matrix, self.cols)
                 # Compute where the data starts
-                offset = row * 8 * self.cols
-                index = col + line * self.cols + offset
-                self.spi.write(bytearray([DIGIT_0 + line, self.buffer[index]]))
+                if not self.rotate_180:
+                    offset = row * 8 * self.cols
+                    index = col + line * self.cols + offset
+                else:
+                    offset = 8 * self.cols - row * self.cols * 8 - 1
+                    index = self.cols * (8 - line) - col + offset
+
+                self.spi.write(bytearray([_DIGIT_0 + line, self.buffer[index]]))
 
             self.cs(1)
