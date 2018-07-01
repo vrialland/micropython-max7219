@@ -31,14 +31,17 @@ class Max7219(framebuf.FrameBuffer):
     so we have a 32x16 display area:
 
     >>> from machine import Pin, SPI
-    >>> import max7219
+    >>> from max7219 import Max7219
     >>> spi = SPI(1, baudrate=10000000)
     >>> screen = Max7219(32, 16, spi, Pin(15))
     >>> screen.rect(0, 0, 32, 16, 1)  # Draws a frame
     >>> screen.text('Hi!', 4, 4, 1)
     >>> screen.show()
+
+    On some matrices, the display is inverted (rotated 180°), in this case
+     you can use `rotate_180=True` in the class constructor.
     """
-    def __init__(self, width, height, spi, cs):
+    def __init__(self, width, height, spi, cs, rotate_180=False):
         # Pins setup
         self.spi = spi
         self.cs = cs
@@ -51,10 +54,12 @@ class Max7219(framebuf.FrameBuffer):
         self.cols = width // _MATRIX_SIZE
         self.rows = height // _MATRIX_SIZE
         self.nb_matrices = self.cols * self.rows
+        self.rotate_180 = rotate_180
 
         # 1 bit per pixel (on / off) -> 8 bytes per matrix
         self.buffer = bytearray(width * height // 8)
-        super().__init__(self.buffer, width, height, framebuf.MONO_HLSB)
+        format = framebuf.MONO_HLSB if not self.rotate_180 else framebuf.MONO_HMSB
+        super().__init__(self.buffer, width, height, format)
 
         # Init display
         self.init_display()
@@ -98,8 +103,13 @@ class Max7219(framebuf.FrameBuffer):
                 # Guess where the matrix is placed
                 row, col = divmod(matrix, self.cols)
                 # Compute where the data starts
-                offset = row * 8 * self.cols
-                index = col + line * self.cols + offset
+                if not self.rotate_180:
+                    offset = row * 8 * self.cols
+                    index = col + line * self.cols + offset
+                else:
+                    offset = 8 * self.cols - row * self.cols * 8 - 1
+                    index = self.cols * (8 - line) - col + offset
+
                 self.spi.write(bytearray([_DIGIT_0 + line, self.buffer[index]]))
 
             self.cs(1)
