@@ -7,17 +7,17 @@ _DIGIT_0 = const(0x1)
 _DECODE_MODE = const(0x9)
 _NO_DECODE = const(0x0)
 
-_INTENSITY = const(0xa)
+_INTENSITY = const(0xA)
 _INTENSITY_MIN = const(0x0)
 
-_SCAN_LIMIT = const(0xb)
+_SCAN_LIMIT = const(0xB)
 _DISPLAY_ALL_DIGITS = const(0x7)
 
-_SHUTDOWN = const(0xc)
+_SHUTDOWN = const(0xC)
 _SHUTDOWN_MODE = const(0x0)
 _NORMAL_OPERATION = const(0x1)
 
-_DISPLAY_TEST = const(0xf)
+_DISPLAY_TEST = const(0xF)
 _DISPLAY_TEST_NORMAL_OPERATION = const(0x0)
 
 _MATRIX_SIZE = const(8)
@@ -41,6 +41,7 @@ class Max7219(framebuf.FrameBuffer):
     On some matrices, the display is inverted (rotated 180°), in this case
      you can use `rotate_180=True` in the class constructor.
     """
+
     def __init__(self, width, height, spi, cs, rotate_180=False):
         # Pins setup
         self.spi = spi
@@ -75,12 +76,12 @@ class Max7219(framebuf.FrameBuffer):
     def init_display(self):
         """Init hardware"""
         for command, data in (
-                (_SHUTDOWN, _SHUTDOWN_MODE),  # Prevent flash during init
-                (_DECODE_MODE, _NO_DECODE),
-                (_DISPLAY_TEST, _DISPLAY_TEST_NORMAL_OPERATION),
-                (_INTENSITY, _INTENSITY_MIN),
-                (_SCAN_LIMIT, _DISPLAY_ALL_DIGITS),
-                (_SHUTDOWN, _NORMAL_OPERATION),  # Let's go
+            (_SHUTDOWN, _SHUTDOWN_MODE),  # Prevent flash during init
+            (_DECODE_MODE, _NO_DECODE),
+            (_DISPLAY_TEST, _DISPLAY_TEST_NORMAL_OPERATION),
+            (_INTENSITY, _INTENSITY_MIN),
+            (_SCAN_LIMIT, _DISPLAY_ALL_DIGITS),
+            (_SHUTDOWN, _NORMAL_OPERATION),  # Let's go
         ):
             self._write_command(command, data)
 
@@ -90,7 +91,7 @@ class Max7219(framebuf.FrameBuffer):
     def brightness(self, value):
         """Set display brightness (0 to 15)"""
         if not 0 <= value < 16:
-            raise ValueError('Brightness must be between 0 and 15')
+            raise ValueError("Brightness must be between 0 and 15")
         self._write_command(_INTENSITY, value)
 
     def show(self):
