@@ -2,26 +2,26 @@
 
 > MicroPython driver for MAX7219 8x8 LED matrix
 
-[![Build Status](https://travis-ci.org/vrialland/micropython-max7219.svg?branch=master)](https://travis-ci.org/vrialland/micropython-max7219)
+![CI status](https://github.com/vrialland/micropython-max7219/workflows/CI/badge.svg?branch=main)
 
 # What is it?
 
 This library provides support for the MAX7219 8x8 LED matrix on ESP8266 with MicroPython.
 It uses [`framebuf`](https://docs.micropython.org/en/latest/esp8266/library/framebuf.html) internally to provide drawing primitives and text support.
-You can chain several matrices the way you like: if you use two 4x 8x8 matrices, you can have 
+You can chain several matrices the way you like: if you use two 4x 8x8 matrices, you can have
 one of the left, and the other on the right giving you a 64x8 area, or have one on top of the other to have a 32x16 display!
 
 The library has only been tested on an ESP8266 (yet!) but may work on other systems.
 
 # Connecting on ESP8266
 
-ESP8266     | MAX7219
------------ | --------
-5V          | VCC
-GND         | GND
-D7 (GPIO13) | DIN
-D8 (GPIO15) | CS
-D5 (GPIO14) | CLK
+| ESP8266     | MAX7219 |
+| ----------- | ------- |
+| 5V          | VCC     |
+| GND         | GND     |
+| D7 (GPIO13) | DIN     |
+| D8 (GPIO15) | CS      |
+| D5 (GPIO14) | CLK     |
 
 # Examples
 
@@ -83,6 +83,7 @@ screen.show()
 # Credits
 
 This library is based on:
+
 - [Official Micropython SSD1306 driver](https://github.com/micropython/micropython/blob/master/drivers/display/ssd1306.py)
 - [micropython-max7219](https://github.com/mcauser/micropython-max7219) by [mcauser](https://github.com/mcauser)
 - [Redgick GFX](https://github.com/redgick/Redgick_GFX/tree/master/Redgick_MatrixMAX72XX) by [jlebunetel](https://github.com/jlebunetel)
