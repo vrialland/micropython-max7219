@@ -11,23 +11,33 @@ It uses [`framebuf`](https://docs.micropython.org/en/latest/esp8266/library/fram
 You can chain several matrices the way you like: if you use two 4x 8x8 matrices, you can have
 one of the left, and the other on the right giving you a 64x8 area, or have one on top of the other to have a 32x16 display!
 
-The library has only been tested on an ESP8266 (yet!) but may work on other systems.
+Tested on ESP8266 and ESP32 systems.
 
 # Connecting on ESP8266
 
-| ESP8266     | MAX7219 |
-| ----------- | ------- |
-| 5V          | VCC     |
-| GND         | GND     |
-| D7 (GPIO13) | DIN     |
-| D8 (GPIO15) | CS      |
-| D5 (GPIO14) | CLK     |
+| ESP8266                    | MAX7219 |
+| -------------------------- | ------- |
+| 5V                         | VCC     |
+| GND                        | GND     |
+| GPIO13 (HWSPI #1 MOSI)     | DIN     |
+| GPIO14 (HWSPI #1 SCK)      | CLK     |
+| GPIO15                     | CS      |
+
+# Connecting on ESP32
+
+| ESP32                      | MAX7219 |
+| -------------------------- | ------- |
+| 5V                         | VCC     |
+| GND                        | GND     |
+| GPIO13 (HWSPI #1 MOSI)     | DIN     |
+| GPIO14 (HWSPI #1 SCK)      | CLK     |
+| GPIO15                     | CS      |
 
 # Examples
 
 Using `10000000` as `baudrate` is recommended as greater values don't seem to work well...
 
-## Single 8x8 matrix
+## Single 8x8 matrix (8x8 pixels)
 
 ```python
 
@@ -35,12 +45,12 @@ from machine import Pin, SPI
 import max7219
 
 spi = SPI(1, baudrate=10000000)
-screen = Max7219(8, 8, spi, Pin(15))
+screen = max7219.Max7219(8, 8, spi, Pin(15))
 screen.text('A', 0, 0, 1)
 screen.show()
 ```
 
-## Single 4x 8x8 matrix
+## Single 4x 8x8 matrix (32x8 pixels)
 
 ```python
 
@@ -48,12 +58,12 @@ from machine import Pin, SPI
 import max7219
 
 spi = SPI(1, baudrate=10000000)
-screen = Max7219(32, 8, spi, Pin(15))
+screen = max7219.Max7219(32, 8, spi, Pin(15))
 screen.text('ABCD', 0, 0, 1)
 screen.show()
 ```
 
-## Two 4x 8x8 matrices (left/right)
+## Two 4x 8x8 matrices (left/right, 64x8 pixels)
 
 ```python
 
@@ -61,12 +71,12 @@ from machine import Pin, SPI
 import max7219
 
 spi = SPI(1, baudrate=10000000)
-screen = Max7219(64, 8, spi, Pin(15))
+screen = max7219.Max7219(64, 8, spi, Pin(15))
 screen.text('ABCDEFGH', 0, 0, 1)
 screen.show()
 ```
 
-## Two 4x 8x8 matrices (top/bottom)
+## Two 4x 8x8 matrices (top/bottom, 32x16 pixels)
 
 ```python
 
@@ -74,7 +84,7 @@ from machine import Pin, SPI
 import max7219
 
 spi = SPI(1, baudrate=10000000)
-screen = Max7219(32, 16, spi, Pin(15))
+screen = max7219.Max7219(32, 16, spi, Pin(15))
 screen.text('ABCD', 0, 0, 1)
 screen.text('EFGH', 0, 8, 1)
 screen.show()
